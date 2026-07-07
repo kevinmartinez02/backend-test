@@ -3,7 +3,11 @@
   "compilerOptions": {    // File Layout
     // "rootDir": "./src",
     // "outDir": "./dist",
-    "rewriteRelativeImportExtensions": true,
+    "paths":{
+      "@generated/*": ["./prisma/generated/*"]
+
+    },
+    "allowImportingTsExtensions": true,
     "erasableSyntaxOnly": true,
     "noEmit": true,
 

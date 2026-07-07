@@ -4,6 +4,7 @@ ENV COREPACK_ENABLE_AUTO_PIN=1
 ENV PORT=8000
 ENV NODE_ENV=development
 ENV CI=true
+ENV pnpm_config_store_dir=/root/.local/share/pnpm/store
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
