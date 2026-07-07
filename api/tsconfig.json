@@ -3,6 +3,9 @@
   "compilerOptions": {    // File Layout
     // "rootDir": "./src",
     // "outDir": "./dist",
+    "rewriteRelativeImportExtensions": true,
+    "erasableSyntaxOnly": true,
+    "noEmit": true,
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
