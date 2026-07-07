@@ -34,6 +34,7 @@ model Book{
   author Author @relation(fields: [authorId],references: [id])
   authorId String
   tags Tag[]
+  statusHistory StatusHistory[] 
   @@map("books")
 }
 
@@ -42,6 +43,16 @@ model Tag{
   name String @unique 
   books Book[]
   @@map("tags")
+}
+
+model StatusHistory{
+  id String @id @default(uuid())
+  book Book @relation(fields: [bookId], references: [id])
+  bookId String
+  fromStatus Book_Status? @map("from_status")
+  toStatus Book_Status @map("to_status")
+  changedAt DateTime @map("changed_at")
+  @@map("status_history")
 }
 
 enum Book_Status{
