@@ -33,7 +33,15 @@ model Book{
   updatedAt DateTime @updatedAt @map("updated_at")
   author Author @relation(fields: [authorId],references: [id])
   authorId String
+  tags Tag[]
   @@map("books")
+}
+
+model Tag{
+  id String @id @default(uuid())
+  name String @unique 
+  books Book[]
+  @@map("tags")
 }
 
 enum Book_Status{
