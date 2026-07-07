@@ -15,5 +15,18 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+     - "${PORT}:${PORT}"
+    volumes:
+      - ./api:/app
+      - /app/node_modules
 volumes:
   db:
