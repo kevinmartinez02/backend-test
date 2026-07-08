@@ -50,7 +50,29 @@ async function createAuthor(name:string,country?:string){
     };
 }
 
+async function getDetailsAuthor(id:string){
+    const authorFound = await prisma.author.findUnique(
+        {
+            where:{
+                id:id
+            }
+        }
+    )
+    if(!authorFound) return {
+        succesfully: false,
+        message: "author not exist",
+        data: null
+    }
+
+    return {
+        succesfully: true,
+        message: "author found",
+        data: authorFound
+    }
+}
+
 export {
     getAllAuthors,
-    createAuthor
+    createAuthor,
+    getDetailsAuthor
 }

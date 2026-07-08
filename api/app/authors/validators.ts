@@ -10,3 +10,7 @@ export const authorSchemaPaginated = z.object({
     pageSize: z.coerce.number().int().min(1).max(100).default(10),
     name: z.string().optional()
 })
+
+export const authorDetailsSchema = z.object({
+    id: z.uuid({error: 'id must be a valid uuid'})
+})
