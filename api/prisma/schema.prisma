@@ -34,6 +34,7 @@ model Book{
   author Author @relation(fields: [authorId],references: [id])
   authorId String
   tags Tag[]
+  deletedAt DateTime? @map("deleted_at") 
   statusHistory StatusHistory[] 
   @@map("books")
 }
