@@ -19,9 +19,15 @@ export class AuthorController{
         const {nameBook, country} = req.body;
         try {
             const createdAuthor = await createAuthor(nameBook,country);
+            if(!createdAuthor.succesfully) {
+                res.status(400).json({
+                    message: createdAuthor.message
+                })
+                return
+            }
             res.status(201).json({
-                message: "author created successfully",
-                data: createdAuthor
+                message: createdAuthor.message,
+                data: createdAuthor.data
             })
         } catch (error: unknown) {
             if(error instanceof Error){

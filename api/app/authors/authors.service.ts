@@ -6,6 +6,22 @@ async function getAllAuthors(){
 }
 async function createAuthor(name:string,country?:string){
 
+    const authorMatched = await prisma.author.findFirst({
+        select:{
+            name: true,
+            country: true
+        },
+        where: {
+            name : name
+        }
+    })
+
+    if(authorMatched) return{
+        succesfully: false,
+        message: "this name is used",
+        data: null
+    }
+
     const authorCreated = await prisma.author.create({
         data:{
             name: name,
@@ -13,7 +29,11 @@ async function createAuthor(name:string,country?:string){
         }
     })
 
-    return authorCreated;
+    return {
+        succesfully: true,
+        message: 'author created',
+        data: authorCreated
+    };
 }
 
 export {
