@@ -77,6 +77,7 @@ export async function listAllBooks(params: ParamsListBooks){
     } = params
 
     const where: Prisma.BookWhereInput = {
+        deletedAt: null,
         ...(status ? { status } : {}),
         ...(genre ? { genre } : {}),
         ...(authorId ? { authorId } : {}),
@@ -108,9 +109,8 @@ export async function listAllBooks(params: ParamsListBooks){
 export async function listBookDetails(bookId: string){
     const result = await  prisma.book.findFirst({
         where: {
-            id: {
-                equals: bookId
-            }
+            id: bookId,
+            deletedAt: null
         },
         include:{
             tags:true,
@@ -163,7 +163,15 @@ export async function updateBook(inputData: UpdateBookSchema){
 }
 
 export async function deleteBook(bookId:string){
-    const result = await prisma.book.update({
+    const bookFound = await prisma.book.findFirst({
+        where:{
+            id: bookId,
+            deletedAt: null
+        }
+    })
+    if(!bookFound) throw new CustomError("Book not Found", StatusCode.NOT_FOUND)
+
+    await prisma.book.update({
         where:{
             id: bookId
         },
@@ -172,4 +180,24 @@ export async function deleteBook(bookId:string){
         }
     })
     return "deleted succesfully"
+}
+
+export async function getBookHistory(bookId:string){
+    const bookFound = await prisma.book.findFirst({
+        where:{
+            id: bookId,
+            deletedAt: null
+        }
+    })
+    if(!bookFound) throw new CustomError("Book not Found", StatusCode.NOT_FOUND)
+
+    const result = await prisma.statusHistory.findMany({
+        where:{
+            bookId: bookId
+        },
+        orderBy:{
+            changedAt: "asc"
+        }
+    })
+    return result
 }

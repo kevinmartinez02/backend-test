@@ -203,4 +203,40 @@ booksRouter.patch('/:id',validateDataSchema(updateBookBodySchema),BookController
  */
 booksRouter.delete('/:id',BookController.deleteBook)
 
+/**
+ * @openapi
+ * /books/{id}/history:
+ *   get:
+ *     summary: Get a book's status history
+ *     description: Returns the chronological status transitions for a book, oldest first.
+ *     tags: [Books]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Status history
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items: { $ref: '#/components/schemas/StatusHistory' }
+ *       404:
+ *         description: Book not found
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Error' }
+ *       422:
+ *         description: Invalid id
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Error' }
+ */
+booksRouter.get('/:id/history',BookController.getBookHistory)
+
 export default booksRouter

@@ -68,6 +68,16 @@ const options: swaggerJsdoc.Options = {
                         },
                     },
                 },
+                StatusHistory: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string', format: 'uuid' },
+                        bookId: { type: 'string', format: 'uuid' },
+                        fromStatus: { allOf: [{ $ref: '#/components/schemas/BookStatus' }], nullable: true },
+                        toStatus: { $ref: '#/components/schemas/BookStatus' },
+                        changedAt: { type: 'string', format: 'date-time' },
+                    },
+                },
                 BookUpdateInput: {
                     type: 'object',
                     description: 'All fields optional; only send what you want to change. Setting `rating` requires the book to already be in `read` status.',
