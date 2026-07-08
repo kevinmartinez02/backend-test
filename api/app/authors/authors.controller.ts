@@ -1,18 +1,20 @@
 
-import express, { type Express, type Request, type Response } from 'express';
+import express, { type Express, type NextFunction, type Request, type Response } from 'express';
 import { getAllAuthors, createAuthor,getDetailsAuthor } from "@/authors/authors.service.ts"
 import { authorSchemaPaginated, authorDetailsSchema } from "@/authors/validators.ts"
+import { CustomError, StatusCode } from '@/lib/validationError.ts';
 
 export class AuthorController{
-    static async findAllAuthors(req:Request,res:Response){
+    static async findAllAuthors(req:Request,res:Response,next: NextFunction){
         const parsed = authorSchemaPaginated.safeParse(req.query)
         if(!parsed.success){
-            res.status(400).json({ error: 'Invalid query params' })
-            return
+            throw new CustomError("Invalited query params", StatusCode.UNPROCESSABLE_ENTITY)
+
         }
-        const { page, pageSize, name } = parsed.data
+        try {
+            const { page, pageSize, name } = parsed.data
         const result = await getAllAuthors(page,pageSize,name)
-        res.status(200).json(
+        res.status(StatusCode.OK).json(
             {
                 data: result.data,
                 meta: {
@@ -22,62 +24,38 @@ export class AuthorController{
                 }
             }
         )
+        } catch (error) {
+            next(error)
+        }
+        
     }
 
-    static async createAuthor(req:Request, res: Response){
+    static async createAuthor(req:Request, res: Response, next: NextFunction){
         const {nameBook, country} = req.body;
         try {
             const createdAuthor = await createAuthor(nameBook,country);
-            if(!createdAuthor.succesfully) {
-                res.status(400).json({
-                    message: createdAuthor.message
-                })
-                return
-            }
-            res.status(201).json({
-                message: createdAuthor.message,
-                data: createdAuthor.data
+           
+            res.status(StatusCode.CREATED).json({
+                message: 'Author created',
+                data: createdAuthor
             })
         } catch (error: unknown) {
-            if(error instanceof Error){
-                res.status(500).json({
-                    message: error.message
-                })
-            } else {
-                res.status(500).json({
-                    message: 'Internal Server Error'
-                })
-            }
+            next(error)
         }
     }
-    static async findAuthorDetails(req:Request, res: Response){
+    static async findAuthorDetails(req:Request, res: Response, next: NextFunction){
         const parsed = authorDetailsSchema.safeParse(req.params)
         if(!parsed.success){
-            res.status(400).json({ error: 'id must be a valid uuid' })
-            return
+            throw new CustomError("Invalited query params", StatusCode.UNPROCESSABLE_ENTITY)
+
         }
         try {
             const result = await getDetailsAuthor(parsed.data.id)
-            if(!result.succesfully) {
-                res.status(404).json({
-                    message: result.message
-                })
-                return
-            }
-            res.status(200).json({
-                data: result.data
+            res.status(StatusCode.OK).json({
+                data: result
             })
         } catch (error) {
-            if(error instanceof Error){
-                res.status(500).json({
-                    message: error.message
-                })
-            } else {
-                res.status(500).json({
-                    message: 'Internal Server Error'
-                })
-            }
-            
+            next(error)
         }
     }
 }

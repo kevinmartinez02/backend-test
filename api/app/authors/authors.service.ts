@@ -1,3 +1,4 @@
+import { CustomError, StatusCode } from "@/lib/validationError.ts";
 import { prisma}  from "@client/prisma"
 
 async function getAllAuthors(page=1,pageSize=10,name?:string){
@@ -30,11 +31,7 @@ async function createAuthor(name:string,country?:string){
         }
     })
 
-    if(authorMatched) return{
-        succesfully: false,
-        message: "this name is used",
-        data: null
-    }
+    if(authorMatched) throw new CustomError('this name is used', StatusCode.CONFLICT)
 
     const authorCreated = await prisma.author.create({
         data:{
@@ -43,11 +40,7 @@ async function createAuthor(name:string,country?:string){
         }
     })
 
-    return {
-        succesfully: true,
-        message: 'author created',
-        data: authorCreated
-    };
+    return authorCreated
 }
 
 async function getDetailsAuthor(id:string){
@@ -58,17 +51,9 @@ async function getDetailsAuthor(id:string){
             }
         }
     )
-    if(!authorFound) return {
-        succesfully: false,
-        message: "author not exist",
-        data: null
-    }
+    if(!authorFound) throw new CustomError("not Found", StatusCode.NOT_FOUND)
 
-    return {
-        succesfully: true,
-        message: "author found",
-        data: authorFound
-    }
+    return authorFound
 }
 
 export {

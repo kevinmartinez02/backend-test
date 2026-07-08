@@ -1,5 +1,5 @@
 
-import {type Response,type Request, type NextFunction, type Errback} from 'express'
+import {type Response,type Request, type NextFunction} from 'express'
 export class CustomError extends Error{
      statusCode: number;
     constructor(message:string,statusCode:number){
@@ -7,8 +7,7 @@ export class CustomError extends Error{
         this.statusCode = statusCode;
     }
 }
-export function globalMidlewareError(err: Error,req:Request,res:Response,next:NextFunction){
-   
+export function globalMiddlewareError(err: Error,_req:Request,res:Response,_next:NextFunction){
     if (err instanceof CustomError) {
         return res.status(err.statusCode).json({
           status: err.statusCode,
@@ -16,6 +15,7 @@ export function globalMidlewareError(err: Error,req:Request,res:Response,next:Ne
         });
       }
 
+      console.error(err)
       return res.status(StatusCode.INTERNAL_SERVER_ERROR).json({
         status: StatusCode.INTERNAL_SERVER_ERROR,
         message: 'Something went wrong on the server',
@@ -29,6 +29,8 @@ export const StatusCode = {
     NOT_FOUND : 404,
     CONFLICT : 409,
     UNPROCESSABLE_ENTITY : 422,
-    INTERNAL_SERVER_ERROR : 500
+    INTERNAL_SERVER_ERROR : 500,
+    CREATED: 201
+
 
 } as const

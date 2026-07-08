@@ -1,19 +1,20 @@
 import {z, ZodError} from 'zod'
-import { type Express, type Request, type Response,type NextFunction } from 'express';
-export const validateDataShema = (schema: z.ZodObject) =>{
-    return async (req: Request,res:Response, next: NextFunction) =>{
+import { type Request, type Response, type NextFunction } from 'express';
+import { CustomError, StatusCode } from './validationError.ts';
+export const validateDataSchema = (schema: z.ZodObject) =>{
+    return (req: Request,_res:Response, next: NextFunction) =>{
         try {
             req.body = schema.parse(req.body)
             next()
         } catch (error) {
             if (error instanceof ZodError) {
-                const errorMessages = error.issues.map((issue) => ({
-                    message: `${issue.path.join('.')} is ${issue.message}`,
-                }))
-                res.status(400).json({ error: 'Invalid data', details: errorMessages })
-            } else {
-                res.status(500).json({ error: 'Internal Server Error' })
+                const message = error.issues
+                    .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+                    .join('; ')
+                next(new CustomError(message, StatusCode.UNPROCESSABLE_ENTITY))
+                return
             }
+            next(error)
         }
     }
 }
