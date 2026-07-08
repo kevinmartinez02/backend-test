@@ -4,3 +4,9 @@ export const authorSchema = z.object({
     nameBook:z.string().min(1,{error: "author name is required"}),
     country: z.string().optional(),
 })
+
+export const authorSchemaPaginated = z.object({
+    page: z.coerce.number().int().min(1).default(1),
+    pageSize: z.coerce.number().int().min(1).max(100).default(10),
+    name: z.string().optional()
+})

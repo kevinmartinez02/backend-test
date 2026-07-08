@@ -1,8 +1,22 @@
 import { prisma}  from "@client/prisma"
 
-async function getAllAuthors(){
-    const allAuthors = await prisma.author.findMany();
-    return allAuthors;
+async function getAllAuthors(page=1,pageSize=10,name?:string){
+    const where = name ? { name: { contains: name, mode: 'insensitive' as const } } : {}
+
+    const allAuthors = await prisma.author.findMany({
+        where,
+        take: pageSize,
+        skip: (page - 1) * pageSize
+    });
+    const totalRecords = await prisma.author.count({ where })
+    const totalPages = Math.ceil(totalRecords / pageSize)
+
+    return {
+        data: allAuthors,
+        page: page,
+        totalRecords: totalRecords,
+        totalPages: totalPages,
+    }
 }
 async function createAuthor(name:string,country?:string){
 

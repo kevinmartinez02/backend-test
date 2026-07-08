@@ -1,16 +1,25 @@
 
 import express, { type Express, type Request, type Response } from 'express';
 import { getAllAuthors, createAuthor } from "@/authors/authors.service.ts"
+import { authorSchemaPaginated } from "@/authors/validators.ts"
 
 export class AuthorController{
     static async findAllAuthors(req:Request,res:Response){
-        const result = await getAllAuthors()
-        if(!result) res.status(200).json({
-            data:[]
-        })
+        const parsed = authorSchemaPaginated.safeParse(req.query)
+        if(!parsed.success){
+            res.status(400).json({ error: 'Invalid query params' })
+            return
+        }
+        const { page, pageSize, name } = parsed.data
+        const result = await getAllAuthors(page,pageSize,name)
         res.status(200).json(
             {
-                data: result
+                data: result.data,
+                meta: {
+                    page: result.page,
+                    totalRecords: result.totalRecords,
+                    totalPages: result.totalPages
+                }
             }
         )
     }
@@ -41,4 +50,5 @@ export class AuthorController{
             }
         }
     }
+    
 }
