@@ -4,7 +4,7 @@ import { authorSchema , authorDetailsSchema} from "@/authors/validators.ts";
 import { validateDataSchema } from "@/lib/validateSchema.ts";
 const routerAuthors: Router = express.Router();
 
-routerAuthors.get('/authors',AuthorController.findAllAuthors)
-routerAuthors.post('/authors',validateDataSchema(authorSchema), AuthorController.createAuthor)
-routerAuthors.get('/authors/:id',AuthorController.findAuthorDetails)
+routerAuthors.get('/',AuthorController.findAllAuthors)
+routerAuthors.post('/',validateDataSchema(authorSchema), AuthorController.createAuthor)
+routerAuthors.get('/:id',AuthorController.findAuthorDetails)
 export default routerAuthors;
