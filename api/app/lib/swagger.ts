@@ -68,6 +68,16 @@ const options: swaggerJsdoc.Options = {
                         },
                     },
                 },
+                BookUpdateInput: {
+                    type: 'object',
+                    description: 'All fields optional; only send what you want to change. Setting `rating` requires the book to already be in `read` status.',
+                    properties: {
+                        title: { type: 'string' },
+                        genre: { $ref: '#/components/schemas/BookGenre' },
+                        status: { $ref: '#/components/schemas/BookStatus' },
+                        rating: { type: 'integer', minimum: 1, maximum: 5 },
+                    },
+                },
                 BookGenre: {
                     type: 'string',
                     enum: ['fiction', 'non_fiction', 'science', 'history', 'biography', 'other'],

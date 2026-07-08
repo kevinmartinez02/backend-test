@@ -7,7 +7,14 @@ export const createBookSchema = z.object({
     tags: z.array(z.string()).optional(),
     genre: z.enum(Book_Genre),
 })
+export const UpdateBookSchema = z.object({
+    bookId: z.uuid({error: "id must be a valid uuid"}),
+    title: z.string().min(1,{message:"title is requerid "}).optional(),
+    status: z.enum(Book_Status).optional(),
+    genre: z.enum(Book_Genre).optional(),
+    rating : z.number().min(1).max(5).optional()
 
+})
 export const listBooksQuerySchema = z.object({
     status: z.enum(Book_Status).optional(),
     genre: z.enum(Book_Genre).optional(),
@@ -23,4 +30,6 @@ export const listBooksQuerySchema = z.object({
 export const listBookDetailsChema = z.object({
     id: z.uuid({error: "id must be a valid uuid"})
 })
+export const updateBookBodySchema = UpdateBookSchema.omit({ bookId: true })
 export type ListBooksQuery = z.infer<typeof listBooksQuerySchema>
+export type UpdateBookSchema = z.infer<typeof UpdateBookSchema>

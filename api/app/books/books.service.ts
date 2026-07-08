@@ -4,6 +4,7 @@ import type { Optional } from "@prisma/client/runtime/client"
 import { Book_Genre } from "@generated/client.ts"
 import { Book_Status } from "@generated/client.ts"
 import { CustomError, StatusCode } from "@/lib/validationError.ts"
+import type { UpdateBookSchema } from "./validators.ts"
 interface BookDataInput {
     authorId: string,
     title: string,
@@ -15,22 +16,36 @@ export async function createBook(bookData:BookDataInput){
     const {tags,authorId,title,genre} = bookData;
     const normalizeTags = [...new Set(tags.map(t=> t.trim().toLowerCase()))]
 
-    const bookCreated = await prisma.book.create({
-        data:{
-            authorId: authorId,
-            title: title,
-            genre: genre,
-            status: Book_Status.to_read,
-            tags:{
-                connectOrCreate:normalizeTags.map(name=>({
-                    where:{name},
-                    create: {name}
-                }))
+    const bookCreated = await prisma.$transaction(async (tx)=>{
+        const result = await tx.book.create({
+            data:{
+                authorId: authorId,
+                title: title,
+                genre: genre,
+                status: Book_Status.to_read,
+                tags:{
+                    connectOrCreate:normalizeTags.map(name=>({
+                        where:{name},
+                        create: {name}
+                    }))
+                }
+            },
+            include: {
+                tags: true
             }
-        },
-        include: {
-            tags: true
-        }
+        })
+
+        await tx.statusHistory.create(
+            {
+                data:{
+                    bookId:result.id,
+                    toStatus:Book_Status.to_read,
+                    changedAt: new Date()
+                }
+            }
+        )
+
+        return result
     })
     return bookCreated
 }
@@ -105,4 +120,44 @@ export async function listBookDetails(bookId: string){
     if(!result) throw new CustomError("Book not Found", StatusCode.BAD_REQUEST)
     return result
 
+}
+
+export async function updateBook(inputData: UpdateBookSchema){
+    const {bookId,status,genre,rating,title} = inputData;
+    const result = await prisma.$transaction(async (tx)=>{
+        const bookFound = await tx.book.findFirst({
+            where: {
+                id: bookId
+            }
+        })
+        if(!bookFound) throw new CustomError('Book not found', StatusCode.BAD_REQUEST)
+        if(rating !== undefined && bookFound.status !== Book_Status.read) throw new CustomError("cannot set a rating unless the book has been read", StatusCode.CONFLICT)
+
+        const updatedBook = await tx.book.update({
+            where: {
+                id: bookId
+            },
+            data:{
+                ...(title !== undefined ? { title } : {}),
+                ...(genre !== undefined ? { genre } : {}),
+                ...(status !== undefined ? { status } : {}),
+                ...(rating !== undefined ? { rating } : {}),
+                ...(status !== undefined && status !== bookFound.status ? {
+                    statusHistory:{
+                        create:{
+                            fromStatus: bookFound.status,
+                            toStatus: status,
+                            changedAt: new Date(),
+                        }
+                    }
+                } : {}),
+            },
+            include: {
+                tags: true
+            }
+        })
+
+        return updatedBook
+    })
+    return result
 }

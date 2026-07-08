@@ -1,5 +1,5 @@
 import express, { Router } from "express"
-import { createBookSchema } from "./validators.ts"
+import { createBookSchema, updateBookBodySchema } from "./validators.ts"
 import { validateDataSchema } from "@/lib/validateSchema.ts"
 import { BookController } from "./books.controller.ts"
 const booksRouter: Router = express.Router()
@@ -131,5 +131,49 @@ booksRouter.get('/',BookController.listBooks)
  *             schema: { $ref: '#/components/schemas/Error' }
  */
 booksRouter.get('/:id',BookController.getBookDetails)
+
+/**
+ * @openapi
+ * /books/{id}:
+ *   patch:
+ *     summary: Update a book
+ *     description: Partially updates a book. If `status` changes, a status-history entry is recorded automatically. Setting `rating` is only allowed once the book's status is `read`.
+ *     tags: [Books]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/BookUpdateInput' }
+ *     responses:
+ *       200:
+ *         description: Book updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data: { $ref: '#/components/schemas/Book' }
+ *       404:
+ *         description: Book not found
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Error' }
+ *       409:
+ *         description: Rating set before the book has been marked as read
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Error' }
+ *       422:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Error' }
+ */
+booksRouter.patch('/:id',validateDataSchema(updateBookBodySchema),BookController.updateBook)
 
 export default booksRouter
