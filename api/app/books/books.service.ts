@@ -161,3 +161,15 @@ export async function updateBook(inputData: UpdateBookSchema){
     })
     return result
 }
+
+export async function deleteBook(bookId:string){
+    const result = await prisma.book.update({
+        where:{
+            id: bookId
+        },
+        data:{
+            deletedAt: new Date()
+        }
+    })
+    return "deleted succesfully"
+}

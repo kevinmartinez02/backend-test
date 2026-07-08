@@ -176,4 +176,31 @@ booksRouter.get('/:id',BookController.getBookDetails)
  */
 booksRouter.patch('/:id',validateDataSchema(updateBookBodySchema),BookController.updateBook)
 
+/**
+ * @openapi
+ * /books/{id}:
+ *   delete:
+ *     summary: Delete a book
+ *     tags: [Books]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       204:
+ *         description: Book deleted
+ *       404:
+ *         description: Book not found
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Error' }
+ *       422:
+ *         description: Invalid id
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Error' }
+ */
+booksRouter.delete('/:id',BookController.deleteBook)
+
 export default booksRouter
