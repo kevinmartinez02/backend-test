@@ -7,3 +7,18 @@ export const createBookSchema = z.object({
     tags: z.array(z.string()).optional(),
     genre: z.enum(Book_Genre),
 })
+
+export const listBooksQuerySchema = z.object({
+    status: z.enum(Book_Status).optional(),
+    genre: z.enum(Book_Genre).optional(),
+    authorId: z.uuid({error: "authorId must be a valid uuid"}).optional(),
+    authorName: z.string().optional(),
+    tag: z.union([z.string(), z.array(z.string())]).optional().transform(v => v === undefined ? undefined : (Array.isArray(v) ? v : [v])),
+    minRating: z.coerce.number().int().min(1).max(5).optional(),
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(10),
+    sortBy: z.enum(["createdAt", "rating", "title"]).default("createdAt"),
+    order: z.enum(["asc", "desc"]).default("desc"),
+})
+
+export type ListBooksQuery = z.infer<typeof listBooksQuerySchema>
