@@ -89,3 +89,20 @@ export async function listAllBooks(params: ParamsListBooks){
         totalPages: Math.ceil(total / limit),
     }
 }
+
+export async function listBookDetails(bookId: string){
+    const result = await  prisma.book.findFirst({
+        where: {
+            id: {
+                equals: bookId
+            }
+        },
+        include:{
+            tags:true,
+            statusHistory:true
+        }
+    })
+    if(!result) throw new CustomError("Book not Found", StatusCode.BAD_REQUEST)
+    return result
+
+}

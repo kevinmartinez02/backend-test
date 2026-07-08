@@ -99,4 +99,37 @@ booksRouter.post('/',validateDataSchema(createBookSchema),BookController.createB
  */
 booksRouter.get('/',BookController.listBooks)
 
+/**
+ * @openapi
+ * /books/{id}:
+ *   get:
+ *     summary: Get book details
+ *     tags: [Books]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: The book
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data: { $ref: '#/components/schemas/Book' }
+ *       404:
+ *         description: Book not found
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Error' }
+ *       422:
+ *         description: Invalid id
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/Error' }
+ */
+booksRouter.get('/:id',BookController.getBookDetails)
+
 export default booksRouter

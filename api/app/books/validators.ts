@@ -20,5 +20,7 @@ export const listBooksQuerySchema = z.object({
     sortBy: z.enum(["createdAt", "rating", "title"]).default("createdAt"),
     order: z.enum(["asc", "desc"]).default("desc"),
 })
-
+export const listBookDetailsChema = z.object({
+    id: z.uuid({error: "id must be a valid uuid"})
+})
 export type ListBooksQuery = z.infer<typeof listBooksQuerySchema>

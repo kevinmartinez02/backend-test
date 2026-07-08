@@ -1,6 +1,6 @@
 import { type Request, type Response,type NextFunction } from "express";
-import { createBook, listAllBooks } from "./books.service.ts";
-import { listBooksQuerySchema } from "./validators.ts";
+import { createBook, listAllBooks , listBookDetails} from "./books.service.ts";
+import { listBooksQuerySchema, listBookDetailsChema } from "./validators.ts";
 import { CustomError, StatusCode } from "@/lib/validationError.ts";
 export class BookController{
     static async createBook(_req:Request,_res:Response, _next: NextFunction){
@@ -30,6 +30,21 @@ export class BookController{
                     limit: result.limit,
                     totalPages: result.totalPages
                 }
+            })
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    static async getBookDetails(req:Request,res:Response, next:NextFunction){
+        const parsed = listBookDetailsChema.safeParse(req.params)
+        if(!parsed.success){
+            throw new CustomError("Invalited query params", StatusCode.UNPROCESSABLE_ENTITY)
+        }
+        try {
+            const result = await listBookDetails(parsed.data.id)
+            res.status(StatusCode.OK).json({
+                data: result
             })
         } catch (error) {
             next(error)
