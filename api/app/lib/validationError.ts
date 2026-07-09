@@ -1,5 +1,6 @@
 
 import {type Response,type Request, type NextFunction} from 'express'
+import { logger } from '@/utils/logger.ts'
 export class CustomError extends Error{
      statusCode: number;
     constructor(message:string,statusCode:number){
@@ -7,14 +8,15 @@ export class CustomError extends Error{
         this.statusCode = statusCode;
     }
 }
-export function globalMiddlewareError(err: Error,_req:Request,res:Response,_next:NextFunction){
+export function globalMiddlewareError(err: Error,req:Request,res:Response,_next:NextFunction){
     if (err instanceof CustomError) {
+        logger.warn(`${req.method} ${req.url} -> ${err.statusCode}: ${err.message}`)
         return res.status(err.statusCode).json({
           status: err.statusCode,
           message: err.message,
         });
       }
-      console.error(err)
+      logger.error(`${req.method} ${req.url} -> 500: ${err.stack ?? err.message}`)
       return res.status(StatusCode.INTERNAL_SERVER_ERROR).json({
         status: StatusCode.INTERNAL_SERVER_ERROR,
         message: 'Something went wrong on the server',

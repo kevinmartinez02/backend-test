@@ -1,4 +1,5 @@
 import { CustomError, StatusCode } from "@/lib/validationError.ts";
+import { logger } from "@/utils/logger.ts";
 import { prisma}  from "@client/prisma"
 
 async function getAllAuthors(page=1,pageSize=10,name?:string){
@@ -40,6 +41,7 @@ async function createAuthor(name:string,country?:string){
         }
     })
 
+    logger.info(`author created: ${authorCreated.id} "${name}"`)
     return authorCreated
 }
 

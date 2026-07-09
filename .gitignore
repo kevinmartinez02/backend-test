@@ -3,3 +3,4 @@
 .env
 /api/.pnpm-store/
 .vscode/
+/logs/

@@ -4,6 +4,7 @@ import type { Optional } from "@prisma/client/runtime/client"
 import { Book_Genre } from "@generated/client.ts"
 import { Book_Status } from "@generated/client.ts"
 import { CustomError, StatusCode } from "@/lib/validationError.ts"
+import { logger } from "@/utils/logger.ts"
 import type { UpdateBookSchema } from "./validators.ts"
 interface BookDataInput {
     authorId: string,
@@ -47,6 +48,7 @@ export async function createBook(bookData:BookDataInput){
 
         return result
     })
+    logger.info(`book created: ${bookCreated.id} "${title}"`)
     return bookCreated
 }
  
@@ -157,8 +159,12 @@ export async function updateBook(inputData: UpdateBookSchema){
             }
         })
 
+        if(status !== undefined && status !== bookFound.status){
+            logger.info(`book ${bookId} status changed: ${bookFound.status} -> ${status}`)
+        }
         return updatedBook
     })
+    logger.info(`book updated: ${bookId}`)
     return result
 }
 
@@ -179,6 +185,7 @@ export async function deleteBook(bookId:string){
             deletedAt: new Date()
         }
     })
+    logger.info(`book soft-deleted: ${bookId}`)
     return "deleted succesfully"
 }
 
