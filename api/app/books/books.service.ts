@@ -201,3 +201,91 @@ export async function getBookHistory(bookId:string){
     })
     return result
 }
+
+export async function getStats(){
+  const notDelete = {deletedAt: null};
+  const [totalBooks,byStatusRaw,byGenreRaw,ratingAgg,topRatedBook,topReaderRaw,tagsRaw] =
+        await prisma.$transaction([
+            prisma.book.count({where:notDelete}),
+            prisma.book.groupBy({
+                by:["status"],
+                _count:{_all:true},
+                where: notDelete,
+                orderBy:{status:'asc'}
+            }),
+            prisma.book.groupBy(
+                {
+                    by:["genre"],
+                    _count:{_all:true},
+                    where: notDelete,
+                    orderBy:{genre:'asc'}
+                }
+            ),
+            prisma.book.aggregate({
+                _avg:{rating:true},
+                where: notDelete
+            }),
+            prisma.book.findFirst({
+                where: {...notDelete,rating: {not:null}},
+                orderBy: {rating: 'desc'},
+                select: {id:true, title: true,rating:true}
+            }),
+            prisma.book.groupBy({
+                by:['authorId'],
+                where: {...notDelete,status: Book_Status.read},
+                _count:{_all:true},
+                orderBy:{ _count: {authorId: 'desc'}},
+                take: 1
+            }),
+            prisma.tag.findMany({
+                select:{
+                    name:true,
+                    _count: {
+                        select:{
+                            books: {
+                                where: notDelete
+                            }
+                        }
+                    }
+                }
+            })
+
+
+        ])
+    const byStatus: Record<string, number> = Object.fromEntries(Object.values(Book_Status).map(s => [s, 0]))
+    byStatusRaw.forEach(r => { byStatus[r.status] = r._count._all })
+
+    const byGenre: Record<string, number> = Object.fromEntries(Object.values(Book_Genre).map(g => [g, 0]))
+    byGenreRaw.forEach(r => { byGenre[r.genre] = r._count._all })
+
+    let mostReadAuthor = null
+    const topReader = topReaderRaw[0]
+    if(topReader){
+        const author = await prisma.author.findUnique({
+            where:{
+                id: topReader.authorId
+            },
+            select:{
+                id: true,
+                name: true
+            }
+        })
+        if(author) mostReadAuthor = {...author, readCount: topReader._count._all}
+    }
+
+    const topTags = tagsRaw
+        .map(t => ({name: t.name, count: t._count.books}))
+        .filter(t => t.count > 0)
+        .sort((a,b) => b.count - a.count)
+        .slice(0,5)
+
+    return {
+        totalBooks,
+        byStatus,
+        byGenre,
+        averageRating: ratingAgg._avg.rating === null ? null : Math.round(ratingAgg._avg.rating * 10) / 10,
+        topRatedBook,
+        mostReadAuthor,
+        topTags,
+    }
+}

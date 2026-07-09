@@ -239,4 +239,54 @@ booksRouter.delete('/:id',BookController.deleteBook)
  */
 booksRouter.get('/:id/history',BookController.getBookHistory)
 
+const statsRouter: Router = express.Router()
+
+/**
+ * @openapi
+ * /stats:
+ *   get:
+ *     summary: Reading statistics
+ *     description: Aggregated stats over non-deleted books, computed in the database.
+ *     tags: [Stats]
+ *     responses:
+ *       200:
+ *         description: Library statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalBooks: { type: integer }
+ *                 byStatus:
+ *                   type: object
+ *                   additionalProperties: { type: integer }
+ *                 byGenre:
+ *                   type: object
+ *                   additionalProperties: { type: integer }
+ *                 averageRating: { type: number, nullable: true }
+ *                 topRatedBook:
+ *                   type: object
+ *                   nullable: true
+ *                   properties:
+ *                     id: { type: string, format: uuid }
+ *                     title: { type: string }
+ *                     rating: { type: integer }
+ *                 mostReadAuthor:
+ *                   type: object
+ *                   nullable: true
+ *                   properties:
+ *                     id: { type: string, format: uuid }
+ *                     name: { type: string }
+ *                     readCount: { type: integer }
+ *                 topTags:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       name: { type: string }
+ *                       count: { type: integer }
+ */
+statsRouter.get('/',BookController.getStats)
+
+export { statsRouter }
 export default booksRouter

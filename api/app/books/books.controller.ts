@@ -1,5 +1,5 @@
 import { type Request, type Response,type NextFunction } from "express";
-import { createBook, listAllBooks , listBookDetails, updateBook, deleteBook, getBookHistory} from "./books.service.ts";
+import { createBook, listAllBooks , listBookDetails, updateBook, deleteBook, getBookHistory, getStats} from "./books.service.ts";
 import { listBooksQuerySchema, listBookDetailsChema } from "./validators.ts";
 import { CustomError, StatusCode } from "@/lib/validationError.ts";
 export class BookController{
@@ -89,6 +89,15 @@ export class BookController{
             res.status(StatusCode.OK).json({
                 data: result
             })
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    static async getStats(_req:Request,res:Response, next:NextFunction){
+        try {
+            const result = await getStats()
+            res.status(StatusCode.OK).json(result)
         } catch (error) {
             next(error)
         }

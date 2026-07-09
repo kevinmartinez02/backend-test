@@ -46,14 +46,26 @@ async function createAuthor(name:string,country?:string){
 async function getDetailsAuthor(id:string){
     const authorFound = await prisma.author.findUnique(
         {
+            select:{
+                id:true,
+                name:true,
+                country:true,
+                books:true,
+                 _count:{
+                    select:{
+                        books:true
+                    }
+                }
+            },
             where:{
                 id:id
-            }
+            },
+            
         }
     )
     if(!authorFound) throw new CustomError("not Found", StatusCode.NOT_FOUND)
 
-    return authorFound
+    return {...authorFound,countBooks: authorFound._count.books}
 }
 
 export {
