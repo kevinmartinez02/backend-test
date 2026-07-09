@@ -25,9 +25,9 @@ const options: swaggerJsdoc.Options = {
                 },
                 AuthorInput: {
                     type: 'object',
-                    required: ['nameBook'],
+                    required: ['name'],
                     properties: {
-                        nameBook: { type: 'string', description: "Author's name" },
+                        name: { type: 'string', description: "Author's name" },
                         country: { type: 'string' },
                     },
                 },

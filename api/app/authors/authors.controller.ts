@@ -31,9 +31,9 @@ export class AuthorController{
     }
 
     static async createAuthor(req:Request, res: Response, next: NextFunction){
-        const {nameBook, country} = req.body;
+        const {name, country} = req.body;
         try {
-            const createdAuthor = await createAuthor(nameBook,country);
+            const createdAuthor = await createAuthor(name,country);
            
             res.status(StatusCode.CREATED).json({
                 message: 'Author created',

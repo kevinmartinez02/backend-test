@@ -9,6 +9,13 @@ export class CustomError extends Error{
     }
 }
 export function globalMiddlewareError(err: Error,req:Request,res:Response,_next:NextFunction){
+    if (err instanceof SyntaxError && 'status' in err && err.status === StatusCode.BAD_REQUEST) {
+        logger.warn(`${req.method} ${req.url} -> 400: invalid JSON body`)
+        return res.status(StatusCode.BAD_REQUEST).json({
+          status: StatusCode.BAD_REQUEST,
+          message: 'Invalid JSON in request body',
+        });
+      }
     if (err instanceof CustomError) {
         logger.warn(`${req.method} ${req.url} -> ${err.statusCode}: ${err.message}`)
         return res.status(err.statusCode).json({

@@ -119,7 +119,7 @@ export async function listBookDetails(bookId: string){
             statusHistory:true
         }
     })
-    if(!result) throw new CustomError("Book not Found", StatusCode.BAD_REQUEST)
+    if(!result) throw new CustomError("Book not Found", StatusCode.NOT_FOUND)
     return result
 
 }
@@ -129,11 +129,13 @@ export async function updateBook(inputData: UpdateBookSchema){
     const result = await prisma.$transaction(async (tx)=>{
         const bookFound = await tx.book.findFirst({
             where: {
-                id: bookId
+                id: bookId,
+                deletedAt: null
             }
         })
-        if(!bookFound) throw new CustomError('Book not found', StatusCode.BAD_REQUEST)
-        if(rating !== undefined && bookFound.status !== Book_Status.read) throw new CustomError("cannot set a rating unless the book has been read", StatusCode.CONFLICT)
+        if(!bookFound) throw new CustomError('Book not found', StatusCode.NOT_FOUND)
+        const finalStatus = status ?? bookFound.status
+        if(rating !== undefined && finalStatus !== Book_Status.read) throw new CustomError("cannot set a rating unless the book has been read", StatusCode.CONFLICT)
 
         const updatedBook = await tx.book.update({
             where: {

@@ -52,10 +52,14 @@ async function getDetailsAuthor(id:string){
                 id:true,
                 name:true,
                 country:true,
-                books:true,
+                books:{
+                    where:{ deletedAt: null }
+                },
                  _count:{
                     select:{
-                        books:true
+                        books:{
+                            where:{ deletedAt: null }
+                        }
                     }
                 }
             },
