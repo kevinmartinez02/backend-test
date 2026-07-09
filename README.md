@@ -16,7 +16,7 @@ API para gestionar una biblioteca personal: autores, libros, tags, historial de 
 cp .env.example .env
 
 # 2. levantar todo (Postgres + API; las migraciones corren solas al arrancar)
-docker compose up --build
+docker compose up 
 
 # 3. (opcional) cargar datos de ejemplo
 docker compose exec api npx prisma db seed
@@ -97,7 +97,6 @@ curl localhost:8000/stats
 
 ## Decisiones técnicas
 
-- **Los libros nuevos siempre nacen en `to_read`:** el `POST /books` no acepta `status` — todo libro entra a la biblioteca como "por leer" (con su primera entrada en el historial), y el avance se refleja después vía `PATCH`. Así el historial de lectura siempre está completo desde el inicio.
 - **Historial de status en transacción:** crear un libro o cambiarle el status escribe el `StatusHistory` dentro de la misma transacción de Prisma — o pasa todo, o no pasa nada.
 - **Tags create-or-reuse:** se normalizan (minúsculas + trim) y se resuelven con `connectOrCreate`, así nunca hay duplicados. En el `PATCH`, mandar `tags` **reemplaza** la lista completa (comportamiento predecible: lo que mandás es lo que queda).
 - **Soft delete:** `deletedAt` en `Book`; todas las queries de lectura, actualización y estadísticas filtran `deletedAt: null`.

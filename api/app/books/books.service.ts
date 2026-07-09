@@ -150,8 +150,6 @@ export async function updateBook(inputData: UpdateBookSchema){
                 ...(genre !== undefined ? { genre } : {}),
                 ...(status !== undefined ? { status } : {}),
                 ...(rating !== undefined ? { rating } : {}),
-                // set:[] desconecta los tags actuales y connectOrCreate conecta los nuevos
-                // (reusa los existentes, crea los que falten) — reemplazo completo
                 ...(tags !== undefined ? {
                     tags:{
                         set: [],

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
     "dev": "tsx watch app/main.ts"
   },
   "keywords": [],
@@ -19,7 +19,8 @@
     "@types/swagger-ui-express": "^4.1.8",
     "prisma": "^7.8.0",
     "tsx": "^4.23.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
