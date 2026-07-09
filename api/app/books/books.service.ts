@@ -13,9 +13,13 @@ interface BookDataInput {
     tags: Array<string>
 }
 
+function normalizeTags(tags: Array<string>){
+    return [...new Set(tags.map(t=> t.trim().toLowerCase()))].filter(t => t.length > 0)
+}
+
 export async function createBook(bookData:BookDataInput){
     const {tags,authorId,title,genre} = bookData;
-    const normalizeTags = [...new Set(tags.map(t=> t.trim().toLowerCase()))]
+    const normalizedTags = normalizeTags(tags)
 
     const bookCreated = await prisma.$transaction(async (tx)=>{
         const result = await tx.book.create({
@@ -25,7 +29,7 @@ export async function createBook(bookData:BookDataInput){
                 genre: genre,
                 status: Book_Status.to_read,
                 tags:{
-                    connectOrCreate:normalizeTags.map(name=>({
+                    connectOrCreate:normalizedTags.map(name=>({
                         where:{name},
                         create: {name}
                     }))
@@ -125,7 +129,7 @@ export async function listBookDetails(bookId: string){
 }
 
 export async function updateBook(inputData: UpdateBookSchema){
-    const {bookId,status,genre,rating,title} = inputData;
+    const {bookId,status,genre,rating,title,tags} = inputData;
     const result = await prisma.$transaction(async (tx)=>{
         const bookFound = await tx.book.findFirst({
             where: {
@@ -146,6 +150,17 @@ export async function updateBook(inputData: UpdateBookSchema){
                 ...(genre !== undefined ? { genre } : {}),
                 ...(status !== undefined ? { status } : {}),
                 ...(rating !== undefined ? { rating } : {}),
+                // set:[] desconecta los tags actuales y connectOrCreate conecta los nuevos
+                // (reusa los existentes, crea los que falten) — reemplazo completo
+                ...(tags !== undefined ? {
+                    tags:{
+                        set: [],
+                        connectOrCreate: normalizeTags(tags).map(name=>({
+                            where:{name},
+                            create: {name}
+                        }))
+                    }
+                } : {}),
                 ...(status !== undefined && status !== bookFound.status ? {
                     statusHistory:{
                         create:{

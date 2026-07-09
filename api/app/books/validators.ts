@@ -12,7 +12,8 @@ export const UpdateBookSchema = z.object({
     title: z.string().min(1,{message:"title is requerid "}).optional(),
     status: z.enum(Book_Status).optional(),
     genre: z.enum(Book_Genre).optional(),
-    rating : z.number().int().min(1).max(5).optional()
+    rating : z.number().int().min(1).max(5).optional(),
+    tags: z.array(z.string()).optional()
 
 })
 export const listBooksQuerySchema = z.object({
