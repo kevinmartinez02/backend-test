@@ -6,8 +6,16 @@ API para gestionar una biblioteca personal: autores, libros, tags, historial de 
 
 ## Requisitos previos
 
-- [Docker](https://www.docker.com/) y Docker Compose — es lo único que necesitás para la opción rápida.
-- Para desarrollo local sin Docker: Node.js 22+, pnpm y una instancia de PostgreSQL.
+**Opción A — con Docker (recomendada):**
+
+- Docker instalado y corriendo (Docker Desktop o Docker Engine 24+)
+- Docker Compose v2 instalado (incluido en Docker Desktop; verificá con `docker compose version`)
+
+**Opción B — desarrollo local sin Docker:**
+
+- Node.js 22 o superior instalado (verificá con `node -v`)
+- pnpm 11 o superior instalado (`corepack enable` lo activa si tenés Node)
+- PostgreSQL 16 instalado y corriendo — o usá el Postgres local de Prisma con `npx prisma dev` (no requiere instalar nada más)
 
 ## 🚀 Levantar el proyecto (Docker)
 
@@ -22,7 +30,7 @@ docker compose up
 docker compose exec api npx prisma db seed
 ```
 
-Y listo — la API queda en `http://localhost:<PORT>` y la documentación Swagger en `http://localhost:<PORT>/docs`.
+La API queda disponible en `http://localhost:<PORT>` (el puerto que definiste en tu `.env`) y la documentación Swagger en `http://localhost:<PORT>/docs`. No hace falta ningún paso adicional: las migraciones y la generación del cliente de Prisma corren automáticamente al arrancar el contenedor.
 
 Ejemplo de `.env`:
 
@@ -39,14 +47,20 @@ DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGR
 
 ```bash
 cd api
-pnpm install
-npx prisma dev          # Postgres local de Prisma (o apuntá DATABASE_URL a tu Postgres)
-npx prisma migrate dev  # aplica migraciones y genera el cliente
-npx prisma db seed      # datos de ejemplo
-pnpm dev                # servidor con hot-reload
+pnpm install            # instala las dependencias
+npx prisma dev          # levanta el Postgres local de Prisma (dejalo corriendo en esta terminal)
 ```
 
-> En `api/.env` va la `DATABASE_URL` que uses localmente (con `npx prisma dev`, la URL `postgres://...` que imprime al arrancar).
+Creá el archivo `api/.env` con la `DATABASE_URL` que `npx prisma dev` imprime al arrancar (la que empieza con `postgres://...`). Si en cambio usás tu propio PostgreSQL, poné ahí su URL de conexión.
+
+Luego, en otra terminal:
+
+```bash
+cd api
+npx prisma migrate dev  # aplica migraciones y genera el cliente
+npx prisma db seed      # (opcional) carga datos de ejemplo
+pnpm dev                # servidor con hot-reload en http://localhost:8000
+```
 
 ## Endpoints
 
