@@ -36,6 +36,11 @@ model Book{
   tags Tag[]
   deletedAt DateTime? @map("deleted_at") 
   statusHistory StatusHistory[] 
+
+  @@index([authorId])
+  @@index([status])
+  @@index([genre])
+
   @@map("books")
 }
 
@@ -43,6 +48,7 @@ model Tag{
   id String @id @default(uuid())
   name String @unique 
   books Book[]
+
   @@map("tags")
 }
 
@@ -53,6 +59,8 @@ model StatusHistory{
   fromStatus Book_Status? @map("from_status")
   toStatus Book_Status @map("to_status")
   changedAt DateTime @map("changed_at")
+
+  @@index([bookId, changedAt])
   @@map("status_history")
 }
 
