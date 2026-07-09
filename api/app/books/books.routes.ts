@@ -2,6 +2,7 @@ import express, { Router } from "express"
 import { createBookSchema, updateBookBodySchema } from "./validators.ts"
 import { validateDataSchema } from "@/lib/validateSchema.ts"
 import { BookController } from "./books.controller.ts"
+import CacheMiddlweare from "@/lib/cacheMiddleware.ts"
 const booksRouter: Router = express.Router()
 
 /**
@@ -286,7 +287,7 @@ const statsRouter: Router = express.Router()
  *                       name: { type: string }
  *                       count: { type: integer }
  */
-statsRouter.get('/',BookController.getStats)
+statsRouter.get('/',CacheMiddlweare,BookController.getStats)
 
 export { statsRouter }
 export default booksRouter

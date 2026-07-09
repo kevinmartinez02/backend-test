@@ -2,6 +2,7 @@ import { type Request, type Response,type NextFunction } from "express";
 import { createBook, listAllBooks , listBookDetails, updateBook, deleteBook, getBookHistory, getStats} from "./books.service.ts";
 import { listBooksQuerySchema, listBookDetailsChema } from "./validators.ts";
 import { CustomError, StatusCode } from "@/lib/validationError.ts";
+import { cache } from "@/lib/cacheMiddleware.ts";
 export class BookController{
     static async createBook(_req:Request,_res:Response, _next: NextFunction){
         try {
@@ -95,8 +96,11 @@ export class BookController{
     }
 
     static async getStats(_req:Request,res:Response, next:NextFunction){
+        const key = `${_req.originalUrl}`;
+    
         try {
             const result = await getStats()
+            cache.set(key,result)
             res.status(StatusCode.OK).json(result)
         } catch (error) {
             next(error)
