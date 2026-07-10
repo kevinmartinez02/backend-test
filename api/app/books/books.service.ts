@@ -283,7 +283,6 @@ export async function getStats(){
 
     const byGenre: Record<string, number> = Object.fromEntries(Object.values(Book_Genre).map(g => [g, 0]))
     byGenreRaw.forEach(r => { byGenre[r.genre] = r._count._all })
-
     const topReader = topReaderRaw[0]
     const mostReader = topReader ? { id: topReader.id, name: topReader.name, readCount: topReader.readCount } : null
     const topTags = tagsRaw
