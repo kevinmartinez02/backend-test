@@ -223,24 +223,28 @@ export async function getBookHistory(bookId:string){
     })
     return result
 }
-
 export async function getStats(){
   const notDelete = {deletedAt: null};
   const [totalBooks,byStatusRaw,byGenreRaw,ratingAgg,topRatedBook,topReaderRaw,tagsRaw] =
         await prisma.$transaction([
             prisma.book.count({where:notDelete}),
-            prisma.book.groupBy({
-                by:["status"],
-                _count:{_all:true},
-                where: notDelete,
-                orderBy:{status:'asc'}
-            }),
+            prisma.$queryRaw<Array<{status: Book_Status, count: number}>>`
+            SELECT status, COUNT(*)::int AS count
+            FROM books
+            WHERE deleted_at IS NULL
+            GROUP BY status`,
             prisma.book.groupBy(
                 {
                     by:["genre"],
-                    _count:{_all:true},
-                    where: notDelete,
-                    orderBy:{genre:'asc'}
+                    orderBy:{
+                        _count:{
+                            genre: 'asc'
+                        }
+                    },
+                    where: {...notDelete},
+                    _count:{
+                        _all:true
+                    }
                 }
             ),
             prisma.book.aggregate({
@@ -252,62 +256,44 @@ export async function getStats(){
                 orderBy: {rating: 'desc'},
                 select: {id:true, title: true,rating:true}
             }),
-            prisma.book.groupBy({
-                by:['authorId'],
-                where: {...notDelete,status: Book_Status.read},
-                _count:{_all:true},
-                orderBy:{ _count: {authorId: 'desc'}},
-                take: 1
-            }),
-            prisma.tag.findMany({
-                select:{
-                    name:true,
-                    _count: {
-                        select:{
-                            books: {
-                                where: notDelete
-                            }
-                        }
-                    }
-                }
-            })
-
-
-        ])
+            prisma.$queryRaw<Array<{id:string,name:string,readCount:number}>>`
+            SELECT a.id AS id, a.name AS name, COUNT(*)::int AS "readCount"
+            FROM books AS b
+            INNER JOIN authors AS a
+            ON a.id = b."authorId"
+            WHERE b.deleted_at IS NULL AND b.status = 'read'
+            GROUP BY a.id, a.name
+            ORDER BY COUNT(*) DESC
+            LIMIT 1
+            `,
+            prisma.$queryRaw<Array<{name:string,count:number}>>`
+            SELECT t.name, COUNT(b.id)::int AS count
+            FROM books AS b
+            JOIN "_BookToTag" AS btt
+            ON btt."A" = b.id
+            JOIN public.tags AS t on t.id = btt."B"
+            WHERE b.deleted_at IS NULL
+            GROUP BY t.name
+            ORDER BY count desc
+            LIMIT 5
+            `
+       ])
     const byStatus: Record<string, number> = Object.fromEntries(Object.values(Book_Status).map(s => [s, 0]))
-    byStatusRaw.forEach(r => { byStatus[r.status] = r._count._all })
+    byStatusRaw.forEach(r => { byStatus[r.status] = r.count })
 
     const byGenre: Record<string, number> = Object.fromEntries(Object.values(Book_Genre).map(g => [g, 0]))
     byGenreRaw.forEach(r => { byGenre[r.genre] = r._count._all })
 
-    let mostReadAuthor = null
     const topReader = topReaderRaw[0]
-    if(topReader){
-        const author = await prisma.author.findUnique({
-            where:{
-                id: topReader.authorId
-            },
-            select:{
-                id: true,
-                name: true
-            }
-        })
-        if(author) mostReadAuthor = {...author, readCount: topReader._count._all}
-    }
-
+    const mostReader = topReader ? { id: topReader.id, name: topReader.name, readCount: topReader.readCount } : null
     const topTags = tagsRaw
-        .map(t => ({name: t.name, count: t._count.books}))
-        .filter(t => t.count > 0)
-        .sort((a,b) => b.count - a.count)
-        .slice(0,5)
-
     return {
         totalBooks,
         byStatus,
         byGenre,
         averageRating: ratingAgg._avg.rating === null ? null : Math.round(ratingAgg._avg.rating * 10) / 10,
         topRatedBook,
-        mostReadAuthor,
+        mostReader,
         topTags,
     }
 }
