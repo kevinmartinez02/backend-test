@@ -121,8 +121,3 @@ curl localhost:8000/stats
 - **Validación con Zod** en body, params y query; los tipos de TS se infieren de los schemas (`z.infer`). Errores de validación → 422; JSON malformado → 400; manejo centralizado en un middleware.
 - **Logs con winston + morgan:** requests HTTP, eventos de negocio (creaciones, cambios de status, deletes) y errores con stack; sin `console.log` en el código de la app.
 - **Rate limiting:** 100 requests/15min por IP con headers estándar (`draft-8`).
-
-### Qué quedó afuera (y por qué)
-
-- **Búsqueda por trigramas:** `authorName` usa `contains` case-insensitive; con más volumen convendría `pg_trgm` + índice GIN, que un B-tree no puede acelerar para búsquedas parciales.
-- **Autenticación:** fuera del alcance según el enunciado.
