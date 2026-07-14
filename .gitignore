@@ -4,3 +4,5 @@
 /api/.pnpm-store/
 .vscode/
 /logs/
+.DS_Store
+/api/.DS_Store

@@ -6,6 +6,8 @@ import { Book_Status } from "@generated/client.ts"
 import { CustomError, StatusCode } from "@/lib/validationError.ts"
 import { logger } from "@/utils/logger.ts"
 import type { UpdateBookSchema } from "./validators.ts"
+import { id } from "zod/locales"
+import { read } from "node:fs"
 interface BookDataInput {
     authorId: string,
     title: string,
@@ -225,6 +227,32 @@ export async function getBookHistory(bookId:string){
 }
 export async function getStats(){
   const notDelete = {deletedAt: null};
+ const top =  prisma.book.groupBy({
+    by:['authorId'],
+    where:{
+        ...notDelete,
+        status:'read'
+    },
+    orderBy:{
+        _count:{
+            id:"desc"
+        }
+    },
+    _count: true,
+    take:1
+})
+const byGenreCount =  prisma.book.groupBy(
+    {
+        by:["genre"],
+        orderBy:{
+            _count:{
+                genre: 'asc'
+            }
+        },
+        where: {...notDelete},
+        _count:true
+    }
+)
   const [totalBooks,byStatusRaw,byGenreRaw,ratingAgg,topRatedBook,topReaderRaw,tagsRaw] =
         await prisma.$transaction([
             prisma.book.count({where:notDelete}),
@@ -233,20 +261,8 @@ export async function getStats(){
             FROM books
             WHERE deleted_at IS NULL
             GROUP BY status`,
-            prisma.book.groupBy(
-                {
-                    by:["genre"],
-                    orderBy:{
-                        _count:{
-                            genre: 'asc'
-                        }
-                    },
-                    where: {...notDelete},
-                    _count:{
-                        _all:true
-                    }
-                }
-            ),
+            byGenreCount
+           ,
             prisma.book.aggregate({
                 _avg:{rating:true},
                 where: notDelete
@@ -256,7 +272,7 @@ export async function getStats(){
                 orderBy: {rating: 'desc'},
                 select: {id:true, title: true,rating:true}
             }),
-            prisma.$queryRaw<Array<{id:string,name:string,readCount:number}>>`
+            /*prisma.$queryRaw<Array<{id:string,name:string,readCount:number}>>`
             SELECT a.id AS id, a.name AS name, COUNT(*)::int AS "readCount"
             FROM books AS b
             INNER JOIN authors AS a
@@ -265,7 +281,9 @@ export async function getStats(){
             GROUP BY a.id, a.name
             ORDER BY COUNT(*) DESC
             LIMIT 1
-            `,
+            `*/
+            top
+           ,
             prisma.$queryRaw<Array<{name:string,count:number}>>`
             SELECT t.name, COUNT(b.id)::int AS count
             FROM books AS b
@@ -282,9 +300,19 @@ export async function getStats(){
     byStatusRaw.forEach(r => { byStatus[r.status] = r.count })
 
     const byGenre: Record<string, number> = Object.fromEntries(Object.values(Book_Genre).map(g => [g, 0]))
-    byGenreRaw.forEach(r => { byGenre[r.genre] = r._count._all })
+    byGenreRaw.forEach(r => { byGenre[r.genre] = r._count })
+    let mostReader: { id: string; name: string; readCount: number } | null = null
     const topReader = topReaderRaw[0]
-    const mostReader = topReader ? { id: topReader.id, name: topReader.name, readCount: topReader.readCount } : null
+    if (topReader) {
+        const author = await prisma.author.findUnique({
+            where: { id: topReader.authorId },
+            select: { id: true, name: true },
+        })
+
+        if (author) {
+            mostReader = { ...author, readCount: topReader._count }
+        }
+    }
     const topTags = tagsRaw
     return {
         totalBooks,
