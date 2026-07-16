@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "vitest run",
-    "dev": "tsx watch app/main.ts"
+    "dev": "tsx watch app/main.ts",
+    "format": "prettier --write ."
   },
   "keywords": [],
   "author": "",
@@ -17,6 +18,7 @@
     "@types/pg": "^8.20.0",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
+    "prettier": "^3.9.5",
     "prisma": "^7.8.0",
     "tsx": "^4.23.0",
     "typescript": "^6.0.3",

@@ -1,9 +1,9 @@
-import express, { Router } from "express"
-import { createBookSchema, updateBookBodySchema } from "./validators.ts"
-import { validateDataSchema } from "@/lib/validateSchema.ts"
-import { BookController } from "./books.controller.ts"
-import CacheMiddlweare from "@/lib/cacheMiddleware.ts"
-const booksRouter: Router = express.Router()
+import express, { Router } from "express";
+import { createBookSchema, updateBookBodySchema } from "./validators.ts";
+import { validateDataSchema } from "@/lib/validateSchema.ts";
+import { BookController } from "./books.controller.ts";
+import CacheMiddlweare from "@/lib/cacheMiddleware.ts";
+const booksRouter: Router = express.Router();
 
 /**
  * @openapi
@@ -32,7 +32,11 @@ const booksRouter: Router = express.Router()
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-booksRouter.post('/',validateDataSchema(createBookSchema),BookController.createBook)
+booksRouter.post(
+  "/",
+  validateDataSchema(createBookSchema),
+  BookController.createBook,
+);
 
 /**
  * @openapi
@@ -98,7 +102,7 @@ booksRouter.post('/',validateDataSchema(createBookSchema),BookController.createB
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-booksRouter.get('/',BookController.listBooks)
+booksRouter.get("/", BookController.listBooks);
 
 /**
  * @openapi
@@ -131,7 +135,7 @@ booksRouter.get('/',BookController.listBooks)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-booksRouter.get('/:id',BookController.getBookDetails)
+booksRouter.get("/:id", BookController.getBookDetails);
 
 /**
  * @openapi
@@ -175,7 +179,11 @@ booksRouter.get('/:id',BookController.getBookDetails)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-booksRouter.patch('/:id',validateDataSchema(updateBookBodySchema),BookController.updateBook)
+booksRouter.patch(
+  "/:id",
+  validateDataSchema(updateBookBodySchema),
+  BookController.updateBook,
+);
 
 /**
  * @openapi
@@ -202,7 +210,7 @@ booksRouter.patch('/:id',validateDataSchema(updateBookBodySchema),BookController
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-booksRouter.delete('/:id',BookController.deleteBook)
+booksRouter.delete("/:id", BookController.deleteBook);
 
 /**
  * @openapi
@@ -238,9 +246,9 @@ booksRouter.delete('/:id',BookController.deleteBook)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-booksRouter.get('/:id/history',BookController.getBookHistory)
+booksRouter.get("/:id/history", BookController.getBookHistory);
 
-const statsRouter: Router = express.Router()
+const statsRouter: Router = express.Router();
 
 /**
  * @openapi
@@ -287,7 +295,7 @@ const statsRouter: Router = express.Router()
  *                       name: { type: string }
  *                       count: { type: integer }
  */
-statsRouter.get('/',CacheMiddlweare,BookController.getStats)
+statsRouter.get("/", CacheMiddlweare, BookController.getStats);
 
-export { statsRouter }
-export default booksRouter
+export { statsRouter };
+export default booksRouter;

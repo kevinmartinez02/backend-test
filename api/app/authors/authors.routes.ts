@@ -1,6 +1,6 @@
 import { AuthorController } from "@/authors/authors.controller.ts";
-import express, { type Router } from 'express';
-import { authorSchema , authorDetailsSchema} from "@/authors/validators.ts";
+import express, { type Router } from "express";
+import { authorSchema, authorDetailsSchema } from "@/authors/validators.ts";
 import { validateDataSchema } from "@/lib/validateSchema.ts";
 const routerAuthors: Router = express.Router();
 
@@ -45,7 +45,7 @@ const routerAuthors: Router = express.Router();
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-routerAuthors.get('/',AuthorController.findAllAuthors)
+routerAuthors.get("/", AuthorController.findAllAuthors);
 
 /**
  * @openapi
@@ -79,7 +79,11 @@ routerAuthors.get('/',AuthorController.findAllAuthors)
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-routerAuthors.post('/',validateDataSchema(authorSchema), AuthorController.createAuthor)
+routerAuthors.post(
+  "/",
+  validateDataSchema(authorSchema),
+  AuthorController.createAuthor,
+);
 
 /**
  * @openapi
@@ -112,5 +116,5 @@ routerAuthors.post('/',validateDataSchema(authorSchema), AuthorController.create
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-routerAuthors.get('/:id',AuthorController.findAuthorDetails)
+routerAuthors.get("/:id", AuthorController.findAuthorDetails);
 export default routerAuthors;
